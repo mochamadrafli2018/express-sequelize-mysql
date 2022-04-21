@@ -1,30 +1,67 @@
 const User = require("../models").User;
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 exports.newUser = (req, res) => {
+  console.log(req.body);
   // validate request
-  if (!req.body) { return res.status(400).send({ message:"Content can not be empty!" }); }
-  if (!req.body.name) { return res.status(400).send({ message:"Name can not be empty!" });}
-  if (!req.body.email) { return res.status(400).send({ message:"Email can not be empty!" });}
-  if (!req.body.password) { return res.status(400).send({ message:"Password can not be empty!" });}
-  if (!req.body.gender) { return res.status(400).send({ message:"Gender can not be empty!" });}
-  if (!req.body.role) { return res.status(400).send({ message:"Role can not be empty!" });}
+  if (!req.body) return res.status(400).send({ message:"Content can not be empty!" });
+  if (!req.body.name) return res.status(400).send({ message:"Name can not be empty!" });
+  if (!req.body.email) return res.status(400).send({ message:"Email can not be empty!" });
+  if (!req.body.password) return res.status(400).send({ message:"Password can not be empty!" });
+  if (req.body.password.length < 8) return res.status(400).send({ message: 'Password must be equal or more than 8 character!' });
+  if (!req.body.gender) return res.status(400).send({ message:"Gender can not be empty!" });
+  if (!req.body.role) return res.status(400).send({ message:"Role can not be empty!" });
   // convert password to hashed
-  const encryptedPassword = bcrypt.hashSync(req.body.password, 10);
-  const newUser = {
-    name: req.body.name,
-    email: req.body.email,
-    password: encryptedPassword,
-    gender: req.body.gender,
-    role: req.body.role,
-    updatedSkriningResult: "",
-  };
-  console.log(newUser); 
-  // save new user in the database
-  User.create(newUser)
-  .then(data => { return res.status(200).send(data); })
-  .catch(error => { 
-    return res.status(500).send({ message: error.message || "Some error occurred while creating the user."});
+  User.findOne({
+    where: {
+      id: req.params.id
+    }
+  })
+  .then(user => { 
+    if (!user) {
+      const encryptedPassword = bcrypt.hashSync(req.body.password, 10);
+      const newUser = {
+        name: req.body.name,
+        email: req.body.email,
+        password: encryptedPassword,
+        gender: req.body.gender,
+        role: req.body.role,
+        updatedSkriningResult: "",
+      };
+      console.log(newUser); 
+      // save new user in the database
+      User.create(newUser).then(user => {
+        console.log('Register success.');
+        // auto sign in token create from user id
+        var accessToken = jwt.sign(
+            {id: user._id}, process.env.JWT_SECRET, {expiresIn: 86400},
+        );
+        console.log('Token: ', accessToken);
+
+        return res.status(200).send({
+          message: 'Register success.',
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
+          token: accessToken,
+        })
+      }).catch(error => { 
+        return res.status(500).send({ message: error.message || "Register fail."});
+      });
+    }
+    else if (user) { return res.status(409).send({ message: 'Email have been registered, please login.' }); }
+  })
+  .catch(error => {
+    if (error.kind === "not_found") {
+      return res.status(404).send({message: `Not found user with id ${req.params.userId}.`});
+    } 
+    else {
+      return res.status(500).send({message: error.message || "Error retrieving user with id " + req.params.userId});
+    }
   });
 };
 

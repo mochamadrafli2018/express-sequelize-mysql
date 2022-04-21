@@ -1,4 +1,4 @@
-# Express (4.17.1), Sequelize (6.16.1) and MySQL Portfolio for CRUD and Auth Application
+# Express (4.17.3), Sequelize (6.16.1) and MySQL Portfolio for CRUD and Auth Application
 
 ## Requirement
 
