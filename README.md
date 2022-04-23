@@ -1,13 +1,13 @@
-# Express (4.17.3), Sequelize (6.16.1) and MySQL Portfolio for CRUD and Auth Application
+## Express (4.17.3), Sequelize (6.16.1) and MySQL for CRUD and Auth Application
 
-## Requirement
+### Requirement
 
 1. Node.js
 2. MySQL
 3. Apache
 4. Postman
 
-## Set up
+### Set up
 
 ```
 npm install
@@ -28,11 +28,11 @@ This project was my undergraduate thesis for chatbot backend that build with exp
 
 Feel free to clone this repo.
 
-## API Endpoint
+### API Endpoint
 
 Open `./routes/routes.js`
 
-## API Endpoint for Development 
+### API Endpoint for Development 
 
 http://127.0.0.1:5000
 
